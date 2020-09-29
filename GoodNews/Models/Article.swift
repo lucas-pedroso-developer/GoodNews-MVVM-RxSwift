@@ -8,12 +8,12 @@
 
 import Foundation
 
-struct ArticleList: Decodable {
+struct ArticleResponse: Decodable {
     let articles: [Article]
 }
 
-extension ArticleList {
-    static var all: Resource<ArticleList> = {
+extension ArticleResponse {
+    static var resource: Resource<ArticleResponse> = {
         let url = URL(string: "http://newsapi.org/v2/everything?q=bitcoin&from=2020-09-21&sortBy=publishedAt&apiKey=c3fee8b314dc411c8afdc11184f3682d")!
         return Resource(url: url)
     }()
@@ -21,8 +21,5 @@ extension ArticleList {
 
 struct Article: Decodable {
     let title: String
-    let description: String
-    
+    let description: String?
 }
-
-

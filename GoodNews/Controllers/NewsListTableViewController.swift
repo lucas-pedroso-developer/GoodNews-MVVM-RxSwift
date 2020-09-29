@@ -13,26 +13,26 @@ import RxCocoa
 
 class NewListTableViewController: UITableViewController {
     
-    private var articleListVM: ArticleListViewModel!
+    let disposeBag = DisposeBag()
     
+    private var articleListVM: ArticleListViewModel!
+            
     override func viewDidLoad() {
-        super.viewDidLoad()        
+        super.viewDidLoad()
+        self.navigationController?.navigationBar.prefersLargeTitles = true
         populateNews()
     }
     
-    private func populateNews() {
-        self.navigationController?.navigationBar.prefersLargeTitles = true
-       URLRequest.load(resource: ArticleList.all)
-            .subscribe(onNext: { [weak self] result in
-                if let result = result {
-                    self?.articleListVM = ArticleListViewModel(articleList: result)
-                    DispatchQueue.main.async {
-                        self?.tableView.reloadData()
-                    }
-                } else {
-                    print("erro")
+    private func populateNews() {        
+        URLRequest.load(resource: ArticleResponse.resource)
+            .subscribe(onNext: { result in
+                let articles = result!.articles
+                self.articleListVM = ArticleListViewModel(articles)
+                
+                DispatchQueue.main.async {
+                    self.tableView.reloadData()
                 }
-            })
+            }).disposed(by: disposeBag)
     }
     
     override func numberOfSections(in tableView: UITableView) -> Int {
@@ -45,10 +45,18 @@ class NewListTableViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath) as? ArticleTableViewCell else { fatalError("ArticleTableViewCellNotFound") }
+                        
+        let articleVM = self.articleListVM.articleAt(indexPath.row)
         
-        let articleVM = self.articleListVM.articleAtIndex(indexPath.row)
-        cell.titleLabel.text = articleVM.title
-        cell.descriptionLabel.text = articleVM.description
+        articleVM.title.asDriver(onErrorJustReturn: "")
+            .drive(cell.titleLabel.rx.text)
+            .disposed(by: disposeBag)
+        
+        articleVM.description.asDriver(onErrorJustReturn: "")
+            .drive(cell.descriptionLabel.rx.text)
+            .disposed(by: disposeBag)
+        
+        
         return cell
     }
     

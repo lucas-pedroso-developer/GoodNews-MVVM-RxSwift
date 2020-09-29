@@ -7,42 +7,21 @@
 //
 
 import Foundation
-
-struct ArticleListViewModel {    
-    let articleList: ArticleList
-}
-
-extension ArticleListViewModel {
-    var numberOfSections: Int {
-        return 1
-    }
-     
-    func numberOfRowsInSection(_ section: Int) -> Int {
-        return self.articleList.articles.count
-    }
-    
-    func articleAtIndex(_ index: Int) -> ArticleViewModel {
-        let article = self.articleList.articles[index]
-        return ArticleViewModel(article)
-    }
-}
+import RxSwift
+import RxCocoa
 
 struct ArticleViewModel {
-    private let article: Article    
-}
-
-extension ArticleViewModel {
+    let article: Article
+    
     init(_ article: Article) {
         self.article = article
     }
-}
-
-extension ArticleViewModel {
-    var title: String {
-        return self.article.title
+    
+    var title: Observable<String> {
+        return Observable<String>.just(article.title)
     }
     
-    var description: String {
-        return self.article.description
+    var description: Observable<String> {
+        return Observable<String>.just(article.description ?? "")
     }
 }
